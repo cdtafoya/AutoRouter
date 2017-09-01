@@ -231,6 +231,69 @@ def trace(end, label, Map):
     
     return tracePoints
 
+def orderSets(S, T):
+    
+    print ("in order sets")
+    pinsInBox = [0] * len(S)
+    for i, each in enumerate(S):
+        
+        for j in xrange(len(S) - 1):
+    
+            j = (i + j + 1) % len(S)
+            
+            xs = S[i].X
+            ys = S[i].Y
+            xt = T[i].X
+            yt = T[i].Y
+            
+            print ("looking at point with coordinates")
+            print ("S "  + str(xs) + " " + str(ys))
+            print("T " + str(xt)+ " " + str(yt))
+            
+            if xs > xt:
+                stepX = -1
+            else:
+                stepX = 1
+                
+            if ys > yt:
+                stepY = -1
+            else:
+                stepY = 1
+                
+            if S[j].X in xrange(xs, xt + stepX, stepX) and S[j].Y in xrange(ys, yt + stepY, stepY):
+                pinsInBox[i] += 1
+                
+            if T[j].X in xrange(xs, xt + stepX, stepX) and T[j].Y in xrange(ys, yt + stepY, stepY):
+                pinsInBox[i] += 1
+
+    for idx, p in enumerate(pinsInBox):
+        print( "Set "+str(idx)+ " has inside of it pins: " +str(p))
+        
+    #===========================================================================
+    # Insert Sort, Depending on whteher i want to maintain the pins initial IDs,
+    # The part inside the if clause should change so as to only keep track of the order
+    # and not actually move the pinds around
+    #===========================================================================
+
+    for index, each in enumerate(pinsInBox):
+        while index > 0:
+            if pinsInBox[index] < pinsInBox[index - 1]:
+
+                pinsInBox[index], pinsInBox[index - 1] = pinsInBox[index - 1], pinsInBox[index]
+
+                S[index], S[index - 1] = S[index - 1], S[index]
+                T[index], T[index - 1] = T[index - 1], T[index]
+
+            index += -1
+    print( "_--------")
+    for each in pinsInBox:
+        print (each)
+    for i in xrange(len(S)):
+        print(str(S[i].X) + "  " + str(S[i].Y))
+        print(str(T[i].X) + "  " + str(T[i].Y))
+    #sys.exit(0)
+
+    return S, T
         
 Map = numpy.empty((40, 30), dtype=numpy.object)
 
@@ -248,30 +311,46 @@ S1 = point(2, 2)
 S2 = point(33, 3)
 S3 = point(5, 16)
 S4 = point(10, 25)
+S5 = point(13, 20)
+S6 = point(5, 5)
 
 # Terminal Points
 T1 = point(23, 23)
 T2 = point(10, 10)
 T3 = point(33, 29)
 T4 = point(39, 29)
+T5 = point(26, 6)
+T6 = point(34, 8)
 
 Ss = []
 Ss.append(S1)
 Ss.append(S2)
 Ss.append(S3)
 Ss.append(S4)
+Ss.append(S5)
+Ss.append(S6)
 
 Ts = []
 Ts.append(T1)
 Ts.append(T2)
 Ts.append(T3)
 Ts.append(T4)
+Ts.append(T5)
+Ts.append(T6)
 
-for i in range(len(Ss)):
-    Map[Ss[i].X][Ss[i].Y] = 'S' + str(i)
-    Map[Ts[i].X][Ts[i].Y] = 'T' + str(i)
+for i in xrange(len(Ss)):
+    Map[Ss[i].X][Ss[i].Y] = 'S' + str(i+1)
+    Map[Ts[i].X][Ts[i].Y] = 'T' + str(i+1)
     
 printMap(Map)
+
+s2, t2 = orderSets(Ss, Ts)
+
+for i in xrange(len(Ss)):
+    Map[Ss[i].X][Ss[i].Y] = 'S' + str(i+1)
+    Map[Ts[i].X][Ts[i].Y] = 'T' + str(i+1)
+    
+
 
 for i in range(len(Ss)):
     

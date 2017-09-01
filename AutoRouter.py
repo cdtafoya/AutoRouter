@@ -197,7 +197,6 @@ def getNextPos(dir, cur, Map):
 
     if nextX not in range(len(Map)) or nextY not in range(len(Map[0])):
         return -1, -1
-    
 
     return nextX, nextY
 

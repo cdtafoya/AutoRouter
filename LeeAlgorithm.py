@@ -350,7 +350,7 @@ for i in xrange(len(Ss)):
     Map[Ss[i].X][Ss[i].Y] = 'S' + str(i+1)
     Map[Ts[i].X][Ts[i].Y] = 'T' + str(i+1)
     
-
+printMap(Map)
 
 for i in range(len(Ss)):
     
@@ -368,7 +368,8 @@ for i in range(len(Ss)):
     points = trace(Ts[i], iFound, WorkMap)
 
     for p in points:
-        Map[p.X][p.Y] = str(i) +'c'
+        #Map[p.X][p.Y] = str(i) +'c'
+        Map[p.X][p.Y] = ' c'
         
     printMap(Map)
     

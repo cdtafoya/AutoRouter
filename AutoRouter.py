@@ -7,7 +7,6 @@ from __future__ import print_function
 import numpy
 import sys
 from point import point
-from test.test_pstats import AddCallersTestCase
 
 global found
 global mtPoint

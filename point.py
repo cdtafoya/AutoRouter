@@ -5,19 +5,13 @@ Created on Jul 31, 2017
 '''
 
 class point:
-    X = None
-    Y = None
+    '''
+    classdocs
+    '''
 
     def __init__(self, x, y):
         '''
         Constructor
         '''
         self.X = x
-        self.Y = y
-        self.pos = (x, y)
-
-    def setX(self, x):
-        self.X = x
-
-    def setY(self, y):
         self.Y = y

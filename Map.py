@@ -4,9 +4,8 @@ Created on Sep 21, 2017
 @author: Carlos
 '''
 from __future__ import print_function
-import numpy as np
 import sys
-from numpy.lib.function_base import append
+
 
 
 class Map(object):
@@ -17,8 +16,7 @@ class Map(object):
     def __init__(self, x, y, components, start_pins, terminal_pins):
         self.x_size = x
         self.y_size = y
-        self.space = np.empty((x, y), dtype=np.object)
-        self.space.fill(" -")
+        self.space = self.makeSpace(x, y) #two-dimensional list
 
         self.components = components
         self.updateComponents()
@@ -29,6 +27,23 @@ class Map(object):
 
         self.traces = []
 
+    def makeSpace(self, x, y):
+        """returns a list of list (Python array) representing the map
+           space to route in, of size x by y.
+           
+        x -- integer type - length of map
+        y -- integer type - height of map
+           
+        space -- Two-Dimensional list
+        """   
+        space = []
+        for i in range(x):
+            space.append([])
+            for j in range(y):
+                space[i].append(' -')
+            
+        return space
+    
     def addComponent(self, component):
 
         c = component
@@ -41,7 +56,9 @@ class Map(object):
                                '\n in map of size ' + str(self.space.shape))
 
         for i in range (c.x, c.x + c.x_size):
-            self.space[i][c.y:c.y + c.y_size] = c.letter
+            for j in range(c.y, c.y + c.y_size):
+                self.space[i][j] = c.letter
+                print(i, c.y, c.letter)
 
         # print ("end of add")
 
@@ -56,12 +73,10 @@ class Map(object):
 
     def updateComponents(self):
         cs = self.components
-        self.space = np.empty((self.x_size, self.y_size), dtype=np.object)
-        self.space.fill(' -')
+        self.space = self.makeSpace(self.x_size, self.y_size)
         # print (len(self.components))
         c = len(cs)
         for i in range(c):
-            # print (cs[i].pos)
             self.addComponent(cs[i])
 
         # print ("finshed for loop")

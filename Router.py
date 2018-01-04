@@ -8,7 +8,6 @@ from Map import Map
 from Map import Component
 from Map import Pin
 from Map import Trace
-import numpy as np
 import sys
 import time
 
@@ -132,9 +131,9 @@ def addCushion(MapInfo, cushion, WorkMap, i):
 
     MapInfo -- Map class object containing information about components.
     cushion -- int, millimeter amount of cushion to add to components.
-    WorkMap -- numpy.ndarray, array to add cushion to.
+    WorkMap -- list (Two-dimensional), array to add cushion to.
 
-    WorkMap -- numpy.ndarray, map space with cushion added to components.
+    WorkMap -- list (Two-dimensional), map space with cushion added to components.
     """
 
     for component in MapInfo.components:
@@ -184,7 +183,7 @@ def trace(end, label, Map):
 
     end -- tuple, point on map in which we are starting the trace from.
     label -- int, wave propagation number of current point.
-    Map -- type must be numpy.ndarray. Wave propagation map.
+    Map -- type must be list (Two-dimensional). Wave propagation map.
 
     tracepoints -- list of tuples containing coordinates of points on trace
     """
@@ -204,7 +203,7 @@ def setDirection(turnPoint, label, Map):
 
     turnPoint -- tuple, point on map in which we are looking for a direction to turn
     label -- int, wave propagation number of current point.
-    Map -- type must be numpy.ndarray. Wave propagation map.
+    Map -- type must be list (Two-dimensional). Wave propagation map.
 
     tracepoints -- list of tuples containing coordinates of points on trace
     """
@@ -267,7 +266,7 @@ def line(dir, current, label, Map):
     dir -- direction line extends.
     current -- type tuple, current point we are traversing through.
     label -- type int, wave propagation number of current point.
-    Map -- type must be numpy.ndarray. Wave propagation map.
+    Map -- type must be list (Two-dimensional). Wave propagation map.
 
     tracepoints -- list of tuples containing coordinates of points on trace
     """
@@ -308,7 +307,7 @@ def getNextPos(dir, cur, Map):
 
     dir -- int, direction of point we want from current point.
     cur -- tuple, current point.
-    Map -- type must be numpy.ndarray.
+    Map -- type must be list (Two-dimensional).
 
     nextX -- int, x-coordinate of point dir from cur.
     nextY -- int, y_coordinate of point dir from cur.
@@ -340,17 +339,18 @@ def getNextPos(dir, cur, Map):
 
 
 def makeWorkMap(Map):
-    """ Copy numpy.ndarray that is used as map
+    """ Copy Two-Dimensional list used as map for performing searches.
 
-    Map -- must be type numpy.ndarray
+    Map -- must be type list (Two-Dimensional)
 
-    newMap -- numpy.ndarray, exact copy of Map.
+    newMap -- list type, exact copy of Map.
     """
 
-    newMap = np.empty((len(Map), len(Map[0])), dtype=np.object)
+    newMap = []
     for i in range(len(Map)):
+        newMap.append([])
         for j in range(len(Map[0])):
-            newMap[i][j] = Map[i][j]
+            newMap[i].append(Map[i][j])
     return newMap
 
 
@@ -359,7 +359,7 @@ def orderSets(Map, S, T):
         of a pair counts how many other pins lie within the box made from xS to
         xT and yS to yT. Map.start_pins and Map.terminal_pins are modified
 
-    Map -- type must be numpy.ndarray.
+    Map -- type must be list (Two-dimensional).
     S -- list type containing Pin objects of start pins
     T -- list type containing Pin objects of terminal pins
 
@@ -420,7 +420,7 @@ def findPinWall(Map, pin):
     """ Determines where the component a pin is connected to is located in
         relation to the pin.
 
-    Map -- type must be numpy.ndarray.
+    Map -- type must be list (Two-dimensional).
     pin -- type must be Pin object.
 
     return -- integer dicating direction of component wall in relation to pin.
@@ -460,7 +460,7 @@ def findPinWall(Map, pin):
 def extendPin(Map, pin, e_length):
     """ Create extension on pin from component.
 
-    Map -- type must be numpy.ndarray.
+    Map -- type must be list (Two-dimensional).
     pin -- type must be Pin object.
     e_length -- integer dictating millimeters pin will be extended.
     """
@@ -504,11 +504,11 @@ def bubble(start, Map, i):
     """ Perform wave propagation portion of Lee Algorithm for routing.
 
     start -- Tuple containing coordinate of start Pin.
-    Map -- type must be numpy.ndarray.
+    Map -- type must be list (Two-dimensional).
 
     iteration_found_at -- integer dictating wave propagation number end
                           terminal was found at.
-    Map -- updated numpy.ndarray map with wave propagation performed on it.
+    Map -- updated list (Two-dimensional) map with wave propagation performed on it.
     """
 
     found = False
@@ -564,7 +564,7 @@ def bubble(start, Map, i):
 def printMap(Map):
     """Print Map given in console.
 
-    Map -- must be numpy.ndarray type
+    Map -- must be list (Two-dimensional) type
     """
 
     # Print column number line

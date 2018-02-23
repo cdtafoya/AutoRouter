@@ -4,9 +4,8 @@ Created on Sep 21, 2017
 @author: Carlos
 '''
 from __future__ import print_function
-import numpy as np
 import sys
-from numpy.lib.function_base import append
+
 
 
 class Map(object):
@@ -14,21 +13,40 @@ class Map(object):
     classdocs
     '''
 
-    def __init__(self, x, y, components, start_pins, terminal_pins):
+    def __init__(self, x, y, components, nets):
         self.x_size = x
         self.y_size = y
-        self.space = np.empty((x, y), dtype=np.object)
-        self.space.fill(" -")
+        self.space = self.makeSpace(x, y) #two-dimensional list
 
         self.components = components
         self.updateComponents()
 
-        self.start_pins = start_pins
-        self.terminal_pins = terminal_pins
+        self.start_pins = [i[0] for i in nets]
+        self.terminal_pins = [i[1] for i in nets]
+        #self.updatePins()
+        
+        self.nets = nets
         self.updatePins()
-
+        
         self.traces = []
 
+    def makeSpace(self, x, y):
+        """returns a list of list (Python array) representing the map
+           space to route in, of size x by y.
+           
+        x -- integer type - length of map
+        y -- integer type - height of map
+           
+        space -- Two-Dimensional list
+        """   
+        space = []
+        for i in range(x):
+            space.append([])
+            for j in range(y):
+                space[i].append(' -')
+            
+        return space
+    
     def addComponent(self, component):
 
         c = component
@@ -41,27 +59,30 @@ class Map(object):
                                '\n in map of size ' + str(self.space.shape))
 
         for i in range (c.x, c.x + c.x_size):
-            self.space[i][c.y:c.y + c.y_size] = c.letter
+            for j in range(c.y, c.y + c.y_size):
+                self.space[i][j] = c.letter
+                #print(i, c.y, c.letter)
 
         # print ("end of add")
 
     def updatePins(self):
-        allPins = self.start_pins + self.terminal_pins
-        for pin in allPins:
-            if self.space[pin.x][pin.y] == ' o':
-                raise  ValueError('Pin' +str(pin.name)+ "with position " +str(pin.pos)+
-                                  ' cannot be placed on existing obstacle')
-
-            self.space[pin.x][pin.y] = pin.name
+        #allPins = self.start_pins + self.terminal_pins
+        for net in self.nets:
+            
+            for pin in net:
+                
+                if self.space[pin.x][pin.y] == ' o':
+                    raise  ValueError('Pin' +str(pin.name)+ "with position " +str(pin.pos)+
+                                      ' cannot be placed on existing obstacle')
+    
+                self.space[pin.x][pin.y] = pin.name
 
     def updateComponents(self):
         cs = self.components
-        self.space = np.empty((self.x_size, self.y_size), dtype=np.object)
-        self.space.fill(' -')
+        self.space = self.makeSpace(self.x_size, self.y_size)
         # print (len(self.components))
         c = len(cs)
         for i in range(c):
-            # print (cs[i].pos)
             self.addComponent(cs[i])
 
         # print ("finshed for loop")
@@ -112,9 +133,16 @@ class Pin(object):
         self.name = name
         self.id = 0
         self.extension = 0  # Length of extension from component
-        self.pos = position
-        self.x = position[0]
-        self.y = position[1]
+        
+        if name == 'GND':
+            self.pos = None
+            self.x = None
+            self.y = None 
+        else:
+            self.pos = position
+            self.x = position[0]
+            self.y = position[1]
+        
         self.oppos = None  # Points to Pin object that this Pin must connect to
         self.attached = True  # Pin is attached to component
 

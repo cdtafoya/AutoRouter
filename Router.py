@@ -8,7 +8,6 @@ from Map import Map
 from Map import Component
 from Map import Pin
 from Map import Trace
-import numpy as np
 import sys
 import time
 
@@ -18,9 +17,9 @@ DOWN = 2
 LEFT = 3
 
 
-def route(Map):
+def route(Map, outputFile):
 
-
+    '''
     for pin in Map.start_pins:
         #print (pin.pos)
         extendPin(Map, pin, 2)
@@ -33,15 +32,27 @@ def route(Map):
         extendPin(Map, pin, 2)
         print (pin.name, pin.extension)
         #print (pin.pos)
-
+    '''
+    
+    for net in Map.nets:
+        for pin in net:
+            extendPin(Map, pin, 2)
+            
+    
     printMap(Map.space)
 
-    S, T = orderSets(Map, Map.start_pins, Map.terminal_pins)
+    #Net pre-processing (determining hub for 3+ nets, net bounding box order.)
+    
+    S = [i[0] for i in Map.nets]
+    T = [i[1] for i in Map.nets]
+
+    #sys.exit(0)
+    S, T = orderSets(Map, S, T)
 
     printMap(Map.space)
 
     traces = []
-    for i, each in enumerate(Map.start_pins):
+    for i, each in enumerate(S):
         WorkMap = makeWorkMap(Map.space)
 
         sx = S[i].x
@@ -72,6 +83,8 @@ def route(Map):
 
 
     printMap(Map.space)
+    printMapFile(Map.space, outputFile)
+    
 
 
 def step(p1, p2):
@@ -132,9 +145,9 @@ def addCushion(MapInfo, cushion, WorkMap, i):
 
     MapInfo -- Map class object containing information about components.
     cushion -- int, millimeter amount of cushion to add to components.
-    WorkMap -- numpy.ndarray, array to add cushion to.
+    WorkMap -- list (Two-dimensional), array to add cushion to.
 
-    WorkMap -- numpy.ndarray, map space with cushion added to components.
+    WorkMap -- list (Two-dimensional), map space with cushion added to components.
     """
 
     for component in MapInfo.components:
@@ -184,7 +197,7 @@ def trace(end, label, Map):
 
     end -- tuple, point on map in which we are starting the trace from.
     label -- int, wave propagation number of current point.
-    Map -- type must be numpy.ndarray. Wave propagation map.
+    Map -- type must be list (Two-dimensional). Wave propagation map.
 
     tracepoints -- list of tuples containing coordinates of points on trace
     """
@@ -204,7 +217,7 @@ def setDirection(turnPoint, label, Map):
 
     turnPoint -- tuple, point on map in which we are looking for a direction to turn
     label -- int, wave propagation number of current point.
-    Map -- type must be numpy.ndarray. Wave propagation map.
+    Map -- type must be list (Two-dimensional). Wave propagation map.
 
     tracepoints -- list of tuples containing coordinates of points on trace
     """
@@ -267,7 +280,7 @@ def line(dir, current, label, Map):
     dir -- direction line extends.
     current -- type tuple, current point we are traversing through.
     label -- type int, wave propagation number of current point.
-    Map -- type must be numpy.ndarray. Wave propagation map.
+    Map -- type must be list (Two-dimensional). Wave propagation map.
 
     tracepoints -- list of tuples containing coordinates of points on trace
     """
@@ -308,7 +321,7 @@ def getNextPos(dir, cur, Map):
 
     dir -- int, direction of point we want from current point.
     cur -- tuple, current point.
-    Map -- type must be numpy.ndarray.
+    Map -- type must be list (Two-dimensional).
 
     nextX -- int, x-coordinate of point dir from cur.
     nextY -- int, y_coordinate of point dir from cur.
@@ -340,17 +353,18 @@ def getNextPos(dir, cur, Map):
 
 
 def makeWorkMap(Map):
-    """ Copy numpy.ndarray that is used as map
+    """ Copy Two-Dimensional list used as map for performing searches.
 
-    Map -- must be type numpy.ndarray
+    Map -- must be type list (Two-Dimensional)
 
-    newMap -- numpy.ndarray, exact copy of Map.
+    newMap -- list type, exact copy of Map.
     """
 
-    newMap = np.empty((len(Map), len(Map[0])), dtype=np.object)
+    newMap = []
     for i in range(len(Map)):
+        newMap.append([])
         for j in range(len(Map[0])):
-            newMap[i][j] = Map[i][j]
+            newMap[i].append(Map[i][j])
     return newMap
 
 
@@ -359,7 +373,7 @@ def orderSets(Map, S, T):
         of a pair counts how many other pins lie within the box made from xS to
         xT and yS to yT. Map.start_pins and Map.terminal_pins are modified
 
-    Map -- type must be numpy.ndarray.
+    Map -- type must be list (Two-dimensional).
     S -- list type containing Pin objects of start pins
     T -- list type containing Pin objects of terminal pins
 
@@ -414,13 +428,13 @@ def orderSets(Map, S, T):
         T[i].id = i
 
     return S, T
-
+    
 
 def findPinWall(Map, pin):
     """ Determines where the component a pin is connected to is located in
         relation to the pin.
 
-    Map -- type must be numpy.ndarray.
+    Map -- type must be list (Two-dimensional).
     pin -- type must be Pin object.
 
     return -- integer dicating direction of component wall in relation to pin.
@@ -460,7 +474,7 @@ def findPinWall(Map, pin):
 def extendPin(Map, pin, e_length):
     """ Create extension on pin from component.
 
-    Map -- type must be numpy.ndarray.
+    Map -- type must be list (Two-dimensional).
     pin -- type must be Pin object.
     e_length -- integer dictating millimeters pin will be extended.
     """
@@ -504,11 +518,11 @@ def bubble(start, Map, i):
     """ Perform wave propagation portion of Lee Algorithm for routing.
 
     start -- Tuple containing coordinate of start Pin.
-    Map -- type must be numpy.ndarray.
+    Map -- type must be list (Two-dimensional).
 
     iteration_found_at -- integer dictating wave propagation number end
                           terminal was found at.
-    Map -- updated numpy.ndarray map with wave propagation performed on it.
+    Map -- updated list (Two-dimensional) map with wave propagation performed on it.
     """
 
     found = False
@@ -564,7 +578,7 @@ def bubble(start, Map, i):
 def printMap(Map):
     """Print Map given in console.
 
-    Map -- must be numpy.ndarray type
+    Map -- must be list (Two-dimensional) type
     """
 
     # Print column number line
@@ -590,56 +604,35 @@ def printMap(Map):
         for y in range(len(Map)):
             print (Map[y][x], end='')
         print()
+        
+def printMapFile(Map, outputFile):
+    """Print Map given in console.
 
+    Map -- must be list (Two-dimensional) type
+    """
+    outputFile = open(outputFile, "w+")
+    
+    # Print column number line
+    outputFile.write(' =  ')
+    for i in range(0, len(Map)):
+        if i < 10:
+            outputFile.write('  ' + str(i))
+        elif i > 9 and i < 100:
+            outputFile.write(' ' + str(i))
+        else:
+            outputFile.write(str(i))
+    outputFile.write('\n')
 
-if __name__ == '__main__':
-
-    c3 = Component((9, 9), (60, 5))
-    c4 = Component((7, 11), (45, 10))
-    c5 = Component((14, 7), (35, 27))
-    c6 = Component((7, 10), (7, 18))
-    c7 = Component((18, 8), (47, 40))
-
-    cs = []
-    cs.append(c3)
-    cs.append(c4)
-    cs.append(c5)
-    cs.append(c6)
-    cs.append(c7)
-
-    start_pins = []
-    terminal_pins = []
-
-    start_pins.append(Pin('S1', (14, 20)))
-    start_pins.append(Pin('S2', (14, 25)))
-    start_pins.append(Pin('S3', (49, 27)))
-    start_pins.append(Pin('S4', (49, 29)))
-    start_pins.append(Pin('S5', (49, 31)))
-    start_pins.append(Pin('S6', (49, 33)))
-    start_pins.append(Pin('S7', (52, 12)))
-    start_pins.append(Pin('S8', (59, 7)))
-    start_pins.append(Pin('S9', (59, 5)))
-    #start_pins.append(Pin('S0', (14, 20)))
-
-    terminal_pins.append(Pin('T1', (34, 29)))
-    terminal_pins.append(Pin('T2', (34, 31)))
-    terminal_pins.append(Pin('T3', (52, 14)))
-    terminal_pins.append(Pin('T4', (52, 16)))
-    terminal_pins.append(Pin('T5', (58, 39)))
-    terminal_pins.append(Pin('T6', (52, 39)))
-    terminal_pins.append(Pin('T7', (59, 9)))
-    terminal_pins.append(Pin('T8', (55, 2)))
-    terminal_pins.append(Pin('T9', (57, 2)))
-    #terminal_pins.append(Pin('T0', (31, 35)))
-
-    map1 = Map(80, 50, cs, start_pins, terminal_pins)
-
-    printMap(map1.space)
-    start_time = time.time()
-    route(map1)
-    print("--- %s seconds ---" % (time.time() - start_time))
-
-
+    # Print Map with row number
+    for x in range(len(Map[0])):
+        if x < 10:
+            outputFile.write(' ' + str(x) + '  ')
+        else:
+            outputFile.write(str(x) + '  ')
+        for y in range(len(Map)):
+            outputFile.write(' ' + Map[y][x])
+        outputFile.write('\n')
+    
     
     
                 

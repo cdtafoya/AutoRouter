@@ -22,6 +22,7 @@ LEFT = 3
 def route(Map, outputFile):
     component_cushion = 2
     trace_cushion = 1
+    x=2
     '''
     for pin in Map.start_pins:
         #print (pin.pos)
